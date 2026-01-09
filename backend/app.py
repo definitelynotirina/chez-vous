@@ -2,11 +2,21 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import hashlib
+
+from services.geocoding_service import GeocodingService
+from services.gemini_service import GeminiService
+from utils.cache import Cache
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localhost:5173")}})
+
+# Initialize services
+geocoding_service = GeocodingService()
+gemini_service = GeminiService()
+cache = Cache()
 
 @app.route("/")
 def home():
@@ -20,12 +30,47 @@ def analyze_address():
     if not address:
         return jsonify({"error": "Address is required"}), 400
 
-    # TODO: implement analysis logic
-    return jsonify({
+    # Create cache key based on address
+    cache_key = f"analysis_{hashlib.md5(address.lower().encode()).hexdigest()}"
+
+    # Check cache first
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return jsonify(cached_result)
+
+    # Geocode the address
+    geo_data = geocoding_service.geocode_address(address)
+    if not geo_data:
+        return jsonify({"error": "Address not found in Paris"}), 404
+
+    # Prepare data for Gemini analysis
+    neighborhood_data = {
         "address": address,
-        "status": "pending",
-        "message": "Analysis not yet implemented"
-    })
+        "arrondissement": geo_data.get("arrondissement"),
+        "neighborhood": geo_data.get("neighborhood"),
+        "district": geo_data.get("district"),
+        "coordinates": {
+            "latitude": geo_data.get("latitude"),
+            "longitude": geo_data.get("longitude")
+        }
+    }
+
+    # Get AI analysis
+    analysis = gemini_service.analyze_neighborhood(neighborhood_data)
+    if not analysis:
+        return jsonify({"error": "Failed to analyze neighborhood"}), 500
+
+    # Build response
+    result = {
+        "address": address,
+        "geo_data": geo_data,
+        "analysis": analysis
+    }
+
+    # Cache the result
+    cache.set(cache_key, result)
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
