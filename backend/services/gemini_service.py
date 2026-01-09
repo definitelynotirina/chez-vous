@@ -51,13 +51,32 @@ class GeminiService:
         """
         arrondissement = data.get("arrondissement", "Unknown")
         address = data.get("address", "Unknown address")
+        transport = data.get("transport", {})
+
+        # Build transport context
+        transport_context = ""
+        if transport:
+            connectivity_score = transport.get("connectivity_score", 0)
+            nearby_stations = transport.get("nearby_stations", [])
+            landmark_times = transport.get("landmark_travel_times", [])
+
+            transport_context = f"\n\nTRANSPORT DATA:"
+            transport_context += f"\n- Connectivity Score: {connectivity_score}/5"
+            transport_context += f"\n- Nearby Stations: {len(nearby_stations)} stations within 500m"
+            if nearby_stations:
+                station_list = ", ".join([f"{s['name']} ({s['walk_time_minutes']}min walk)" for s in nearby_stations[:3]])
+                transport_context += f"\n  Including: {station_list}"
+            if landmark_times:
+                transport_context += "\n- Travel times to landmarks:"
+                for lt in landmark_times:
+                    transport_context += f"\n  * {lt['landmark']}: {lt['time']}"
 
         prompt = f"""You are analyzing a Paris neighborhood for someone looking for accommodation.
 
 Address: {address}
-Arrondissement: {arrondissement}
+Arrondissement: {arrondissement}{transport_context}
 
-Based on your knowledge of Paris neighborhoods, provide a comprehensive analysis in JSON format with the following structure:
+Based on your knowledge of Paris neighborhoods AND the transport data provided, provide a comprehensive analysis in JSON format with the following structure:
 
 {{
   "overview": {{
@@ -66,12 +85,13 @@ Based on your knowledge of Paris neighborhoods, provide a comprehensive analysis
   }},
   "ratings": {{
     "safety": {{"score": 1-5, "justification": "brief explanation"}},
-    "walkability": {{"score": 1-5, "justification": "brief explanation"}},
+    "walkability": {{"score": 1-5, "justification": "use transport data - consider nearby stations"}},
     "nightlife": {{"score": 1-5, "justification": "brief explanation"}},
     "family_friendly": {{"score": 1-5, "justification": "brief explanation"}},
     "food_scene": {{"score": 1-5, "justification": "brief explanation"}},
     "quietness": {{"score": 1-5, "justification": "brief explanation"}},
-    "tourist_density": {{"score": 1-5, "justification": "1=few tourists, 5=very touristy"}}
+    "tourist_density": {{"score": 1-5, "justification": "1=few tourists, 5=very touristy"}},
+    "connectivity": {{"score": 1-5, "justification": "use the connectivity score and transport data provided"}}
   }},
   "highlights": [
     "Key characteristic 1",
@@ -85,10 +105,11 @@ Based on your knowledge of Paris neighborhoods, provide a comprehensive analysis
     "activities": ["Activity 1 with brief description", "Activity 2 with brief description"]
   }},
   "nearby_landmarks": [
-    {{"name": "Landmark name", "travel_time": "e.g., 15 min walk or 20 min metro"}},
-    {{"name": "Another landmark", "travel_time": "estimated time"}}
+    {{"name": "Landmark name", "travel_time": "USE THE ACTUAL TRAVEL TIMES PROVIDED IN TRANSPORT DATA"}}
   ]
 }}
+
+IMPORTANT: Use the actual transport data provided above for connectivity rating and landmark travel times. Do not estimate - use the exact times given.
 
 Return ONLY valid JSON, no additional text."""
 

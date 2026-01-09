@@ -6,6 +6,7 @@ import hashlib
 
 from services.geocoding_service import GeocodingService
 from services.gemini_service import GeminiService
+from services.transport_service import TransportService
 from utils.cache import Cache
 
 load_dotenv()
@@ -16,6 +17,7 @@ CORS(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localh
 # Initialize services
 geocoding_service = GeocodingService()
 gemini_service = GeminiService()
+transport_service = TransportService()
 cache = Cache()
 
 @app.route("/")
@@ -43,6 +45,12 @@ def analyze_address():
     if not geo_data:
         return jsonify({"error": "Address not found in Paris"}), 404
 
+    # Get transport connectivity analysis
+    transport_data = transport_service.analyze_connectivity(
+        geo_data.get("latitude"),
+        geo_data.get("longitude")
+    )
+
     # Prepare data for Gemini analysis
     neighborhood_data = {
         "address": address,
@@ -52,7 +60,8 @@ def analyze_address():
         "coordinates": {
             "latitude": geo_data.get("latitude"),
             "longitude": geo_data.get("longitude")
-        }
+        },
+        "transport": transport_data
     }
 
     # Get AI analysis
@@ -64,6 +73,7 @@ def analyze_address():
     result = {
         "address": address,
         "geo_data": geo_data,
+        "transport": transport_data,
         "analysis": analysis
     }
 

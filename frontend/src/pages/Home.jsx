@@ -81,7 +81,7 @@ function Home() {
                 </p>
 
                 <h3 className="font-semibold mb-2">Ratings</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm mb-6">
                   {result.analysis.ratings && Object.entries(result.analysis.ratings).map(([key, value]) => (
                     <div key={key}>
                       <span className="capitalize">{key.replace('_', ' ')}: </span>
@@ -89,6 +89,43 @@ function Home() {
                     </div>
                   ))}
                 </div>
+
+                {result.transport && (
+                  <div className="border-t-2 border-gray-200 pt-6">
+                    <h3 className="font-semibold mb-3">Transport & Connectivity</h3>
+
+                    <div className="mb-4">
+                      <p className="text-sm mb-2">
+                        <span className="font-semibold">Connectivity Score: </span>
+                        <span className="text-[#b8020a]">{result.transport.connectivity_score}/5</span>
+                      </p>
+                    </div>
+
+                    <h4 className="font-semibold text-sm mb-2">Travel Times to Landmarks</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {result.transport.landmark_travel_times?.map((landmark, idx) => (
+                        <div key={idx} className="flex justify-between">
+                          <span>{landmark.landmark}:</span>
+                          <span className="font-medium">{landmark.time}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {result.transport.nearby_stations && result.transport.nearby_stations.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-sm mb-2">Nearby Stations</h4>
+                        <div className="text-sm">
+                          {result.transport.nearby_stations.slice(0, 5).map((station, idx) => (
+                            <div key={idx} className="mb-1">
+                              <span className="font-medium">{station.name}</span>
+                              <span className="text-gray-600"> - {station.walk_time_minutes} min walk</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
