@@ -13,7 +13,16 @@ from utils.cache import Cache
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localhost:5173")}})
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            os.getenv("FRONTEND_URL", "http://localhost:5173"),
+            "https://chez-vous.vercel.app"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Initialize services
 geocoding_service = GeocodingService()
