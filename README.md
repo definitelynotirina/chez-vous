@@ -1,6 +1,6 @@
 # Chez-Vous
 
-AI-powered Paris neighborhood search engine.
+Paris neighborhood search engine.
 
 **Work in progress** - Live at: [your-app-url.vercel.app](https://your-app-url.vercel.app)
 
