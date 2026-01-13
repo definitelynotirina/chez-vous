@@ -2,7 +2,7 @@
 
 Paris neighborhood search engine.
 
-***Work in progress***
+**This project is a work in progress**
 
 Live at: [(https://chez-vous.vercel.app/)](https://chez-vous.vercel.app/)
 
