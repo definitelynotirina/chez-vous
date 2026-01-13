@@ -2,7 +2,7 @@
 
 Paris neighborhood search engine.
 
-**Work in progress** - Live at: [[[(https://chez-vous.vercel.app/)](https://chez-vous.vercel.app/)]
+**Work in progress** - Live at: [(https://chez-vous.vercel.app/)](https://chez-vous.vercel.app/)
 
 ## Stack
 - Frontend: React + Vite + Tailwind CSS
