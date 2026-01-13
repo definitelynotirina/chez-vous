@@ -5,6 +5,15 @@
   --color-chez-red: #b8020a;
 }
 
+@font-face {
+  font-family: 'Compotes Basilic';
+  src: url('/compotes-basilic/Compotes-Basilic.woff2') format('woff2'),
+       url('/compotes-basilic/Compotes-Basilic.woff') format('woff'),
+       url('/compotes-basilic/Compotes-Basilic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   background-color: var(--color-beige);
   color: black;
@@ -12,4 +21,8 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+}
+
+.heading-font {
+  font-family: 'Compotes Basilic', system-ui, sans-serif;
 }

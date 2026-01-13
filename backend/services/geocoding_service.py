@@ -13,17 +13,22 @@ class GeocodingService:
 
     def geocode_address(self, address: str) -> Optional[Dict]:
         """
-        Convert a Paris address to coordinates and extract arrondissement info.
-        Returns dict with lat, lon, arrondissement, full_address or None if not found.
+        Geocode any Paris address format using Nominatim with Paris bounds.
+        Handles: postcodes, streets, full addresses, with/without "Paris" or "France", any order.
         """
-        # Add Paris, France to ensure we're searching in Paris
-        search_query = f"{address}, Paris, France"
+        cleaned = address.strip()
+
+        # Paris bounding box (limits search to Paris region)
+        paris_bbox = "2.224122,48.815573,2.469920,48.902145"
 
         params = {
-            "q": search_query,
+            "q": cleaned,
             "format": "json",
-            "limit": 1,
-            "addressdetails": 1
+            "addressdetails": 1,
+            "limit": 5,
+            "bounded": 1,
+            "viewbox": paris_bbox,
+            "countrycodes": "fr"
         }
 
         try:
@@ -34,32 +39,49 @@ class GeocodingService:
                 timeout=10
             )
 
-            # Respect Nominatim's usage policy (max 1 req/sec)
-            time.sleep(1)
+            time.sleep(1)  # Respect rate limit
 
-            if response.status_code == 200:
-                results = response.json()
+            if response.status_code != 200:
+                print(f"Nominatim returned status {response.status_code}")
+                return None
 
-                if not results:
-                    return None
+            results = response.json()
 
-                result = results[0]
+            if not results:
+                print(f"No results found for: {cleaned}")
+                return None
+
+            # Find best Paris result
+            for result in results:
                 address_details = result.get("address", {})
 
-                # Extract arrondissement from postcode (75001 -> 1st arrondissement)
+                city = address_details.get("city", "").lower()
+                town = address_details.get("town", "").lower()
+                municipality = address_details.get("municipality", "").lower()
                 postcode = address_details.get("postcode", "")
-                arrondissement = self._extract_arrondissement(postcode)
 
-                return {
-                    "latitude": float(result["lat"]),
-                    "longitude": float(result["lon"]),
-                    "arrondissement": arrondissement,
-                    "postcode": postcode,
-                    "full_address": result.get("display_name", ""),
-                    "neighborhood": address_details.get("suburb") or address_details.get("neighbourhood"),
-                    "district": address_details.get("city_district")
-                }
+                # Verify it's actually in Paris
+                is_paris = (
+                    "paris" in city or
+                    "paris" in town or
+                    "paris" in municipality or
+                    (postcode and postcode.startswith("75"))
+                )
 
+                if is_paris:
+                    arrondissement = self._extract_arrondissement(postcode)
+
+                    return {
+                        "latitude": float(result["lat"]),
+                        "longitude": float(result["lon"]),
+                        "arrondissement": arrondissement,
+                        "postcode": postcode,
+                        "full_address": result.get("display_name", ""),
+                        "neighborhood": address_details.get("suburb") or address_details.get("neighbourhood"),
+                        "district": address_details.get("city_district")
+                    }
+
+            print(f"Results found but none in Paris for: {cleaned}")
             return None
 
         except Exception as e:

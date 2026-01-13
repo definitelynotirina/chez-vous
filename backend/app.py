@@ -7,6 +7,7 @@ import hashlib
 from services.geocoding_service import GeocodingService
 from services.gemini_service import GeminiService
 from services.transport_service import TransportService
+from scrapers.reddit_scraper import RedditScraper
 from utils.cache import Cache
 
 load_dotenv()
@@ -18,11 +19,21 @@ CORS(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localh
 geocoding_service = GeocodingService()
 gemini_service = GeminiService()
 transport_service = TransportService()
+reddit_scraper = RedditScraper()
 cache = Cache()
 
 @app.route("/")
 def home():
     return jsonify({"message": "Chez-vous API is running"})
+
+@app.route("/api/clear-cache", methods=["POST"])
+def clear_cache():
+    """Clear all cached data"""
+    try:
+        cache.clear_all()
+        return jsonify({"message": "Cache cleared successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze_address():
@@ -51,6 +62,12 @@ def analyze_address():
         geo_data.get("longitude")
     )
 
+    # Get Reddit insights for neighborhood
+    reddit_data = reddit_scraper.get_neighborhood_insights(
+        geo_data.get("arrondissement"),
+        geo_data.get("neighborhood")
+    )
+
     # Prepare data for Gemini analysis
     neighborhood_data = {
         "address": address,
@@ -61,7 +78,8 @@ def analyze_address():
             "latitude": geo_data.get("latitude"),
             "longitude": geo_data.get("longitude")
         },
-        "transport": transport_data
+        "transport": transport_data,
+        "reddit": reddit_data
     }
 
     # Get AI analysis
@@ -74,6 +92,7 @@ def analyze_address():
         "address": address,
         "geo_data": geo_data,
         "transport": transport_data,
+        "reddit": reddit_data,
         "analysis": analysis
     }
 

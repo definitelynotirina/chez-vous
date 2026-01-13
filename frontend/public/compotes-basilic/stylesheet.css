@@ -1,0 +1,24 @@
+@font-face {
+    font-family: 'Compotes Basilic Shadow';
+    src: url('Compotes-BasilicShadow.eot');
+    src: local('Compotes Basilic Shadow'), local('Compotes-BasilicShadow'),
+        url('Compotes-BasilicShadow.eot?#iefix') format('embedded-opentype'),
+        url('Compotes-BasilicShadow.woff2') format('woff2'),
+        url('Compotes-BasilicShadow.woff') format('woff'),
+        url('Compotes-BasilicShadow.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Compotes Basilic';
+    src: url('Compotes-Basilic.eot');
+    src: local('Compotes Basilic'), local('Compotes-Basilic'),
+        url('Compotes-Basilic.eot?#iefix') format('embedded-opentype'),
+        url('Compotes-Basilic.woff2') format('woff2'),
+        url('Compotes-Basilic.woff') format('woff'),
+        url('Compotes-Basilic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+

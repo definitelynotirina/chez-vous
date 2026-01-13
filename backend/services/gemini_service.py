@@ -52,6 +52,7 @@ class GeminiService:
         arrondissement = data.get("arrondissement", "Unknown")
         address = data.get("address", "Unknown address")
         transport = data.get("transport", {})
+        reddit = data.get("reddit", {})
 
         # Build transport context
         transport_context = ""
@@ -71,18 +72,24 @@ class GeminiService:
                 for lt in landmark_times:
                     transport_context += f"\n  * {lt['landmark']}: {lt['time']}"
 
+        # Build Reddit context
+        reddit_context = ""
+        if reddit and reddit.get("posts"):
+            reddit_context = "\n\n" + self._format_reddit_insights(reddit)
+
         prompt = f"""You are analyzing a Paris neighborhood for someone looking for accommodation.
 
 Address: {address}
-Arrondissement: {arrondissement}{transport_context}
+Arrondissement: {arrondissement}{transport_context}{reddit_context}
 
-Based on your knowledge of Paris neighborhoods AND the transport data provided, provide a comprehensive analysis in JSON format with the following structure:
+Based on your knowledge of Paris neighborhoods, the transport data, AND the Reddit insights from real residents, provide a comprehensive analysis in JSON format with the following structure:
 
 {{
   "overview": {{
     "description": "2-3 sentence overview of the neighborhood character",
     "three_word_summary": "Three words that capture the essence (e.g., 'Historic, Vibrant, Charming')"
   }},
+  "what_locals_say": ["Paragraph 1 about what locals say about the vibe and atmosphere", "Paragraph 2 about pros and cons mentioned by residents", "Paragraph 3 about any other notable local insights"],
   "ratings": {{
     "safety": {{"score": 1-5, "justification": "brief explanation"}},
     "walkability": {{"score": 1-5, "justification": "use transport data - consider nearby stations"}},
@@ -157,3 +164,27 @@ Return ONLY valid JSON."""
         except Exception as e:
             print(f"Gemini comparison error: {e}")
             return None
+
+    def _format_reddit_insights(self, reddit_data: Dict) -> str:
+        """
+        Format Reddit insights for Gemini prompt.
+        """
+        if not reddit_data.get("posts"):
+            return "No Reddit discussions found for this neighborhood."
+
+        formatted = "REDDIT INSIGHTS (Real resident experiences from r/paris):\n"
+        formatted += "Use these authentic voices to inform your ratings and overview.\n"
+        formatted += "IMPORTANT: Do NOT reference post numbers (like 'post 3' or 'post 8') in your analysis - just synthesize the overall sentiment.\n\n"
+
+        for i, post in enumerate(reddit_data["posts"][:8], 1):  # Top 8 posts
+            formatted += f"{i}. \"{post['title']}\"\n"
+
+            if post.get("text") and len(post["text"]) > 50:
+                text = post["text"][:250]
+                if len(post["text"]) > 250:
+                    text += "..."
+                formatted += f"   {text}\n"
+
+            formatted += f"   (Score: {post['score']}, {post['num_comments']} comments)\n\n"
+
+        return formatted
