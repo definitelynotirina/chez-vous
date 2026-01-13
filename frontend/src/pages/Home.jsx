@@ -54,7 +54,7 @@ function Home() {
                   alt="Loading..."
                   className="w-32 h-32 mb-4"
                 />
-                <p className="text-sm text-gray-600">Analyzing your neighborhood...</p>
+                <p className="text-sm text-[#340a10]">Analyzing your neighborhood...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="w-full">
@@ -64,7 +64,7 @@ function Home() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Enter a Paris address..."
-                    className="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-full focus:outline-none focus:border-gray-300 transition-colors"
+                    className="w-full px-6 py-4 text-lg border border-[#340a10] border-opacity-20 rounded-full focus:outline-none focus:border-[#340a10] focus:border-opacity-40 transition-colors text-[#340a10] placeholder:text-[#340a10] placeholder:opacity-50"
                   />
                 </div>
 
@@ -75,7 +75,7 @@ function Home() {
                       e.preventDefault();
                     }
                   }}
-                  className="mt-6 px-8 py-3 bg-black text-white hover:bg-[#b8020a] transition-colors font-medium rounded-full cursor-pointer"
+                  className="mt-6 px-8 py-3 bg-[#340a10] text-[#e9e9e6] hover:bg-[#4a0e16] transition-colors font-medium rounded-full cursor-pointer"
                 >
                   Search
                 </button>
@@ -85,7 +85,7 @@ function Home() {
         )}
 
         {error && (
-          <div className="mt-8 p-4 bg-red-100 border-2 border-red-600 text-red-700">
+          <div className="mt-8 p-4 border-2 border-[#340a10] text-[#340a10]">
             {error}
           </div>
         )}
@@ -114,18 +114,16 @@ function Home() {
                 )}
               </div>
               <div className="flex-1 flex flex-col items-end">
-                <div className="p-4 bg-white rounded-lg w-full mb-6">
-                  <p className="text-sm text-[#b8020a] font-semibold mb-2">Full address:</p>
-                  <p className="text-sm text-gray-800">{result.geo_data?.full_address}</p>
+                <div className="w-full mb-6">
+                  <h3 className="text-xl text-[#340a10] font-semibold mb-3">Full address</h3>
+                  <p className="text-sm text-[#340a10]">{result.geo_data?.full_address}</p>
                 </div>
 
                 {result.analysis && (
                   <div className="w-full">
-                    <h3 className="text-xl text-[#b8020a] mb-4">Neighborhood Character</h3>
-                    <div className="p-4 bg-white rounded-lg">
-                      <p className="text-sm">{result.analysis.overview?.description}</p>
-                    </div>
-                    <p className="heading-font text-4xl text-[#b8020a] tracking-wide mt-6 text-center capitalize">
+                    <h3 className="text-xl text-[#340a10] font-semibold mb-3">Neighborhood Character</h3>
+                    <p className="text-sm text-[#340a10]">{result.analysis.overview?.description}</p>
+                    <p className="heading-font text-4xl text-[#b8020a] tracking-[0.2em] mt-6 text-center capitalize">
                       {result.analysis.overview?.three_word_summary}
                     </p>
                   </div>
@@ -133,31 +131,28 @@ function Home() {
               </div>
             </div>
 
-            {/* Location */}
-            <div className="mb-8">
+            {/* Separator */}
+            <div className="border-t border-[#340a10] opacity-30 my-12"></div>
 
-              {result.analysis && (
-                <>
-
-                  {result.analysis.what_locals_say && (
-                    <div className="mb-8">
-                      <h3 className="text-xl text-[#b8020a] mb-4">Word of Mouth</h3>
-                      <div className="p-4 bg-white rounded-lg border-l-4 border-[#b8020a]">
-                        <div className="space-y-3 text-sm text-gray-700">
-                          {Array.isArray(result.analysis.what_locals_say) ? (
-                            result.analysis.what_locals_say.map((paragraph, idx) => (
-                              <p key={idx}>{paragraph}</p>
-                            ))
-                          ) : (
-                            <p>{result.analysis.what_locals_say}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+            {/* Word of Mouth */}
+            {result.analysis && result.analysis.what_locals_say && (
+              <div className="mb-12">
+                <h3 className="text-3xl text-[#340a10] font-bold mb-2">Word of Mouth</h3>
+                <p className="text-sm text-[#340a10] mb-6 opacity-70">What Reddit is saying</p>
+                <div className="space-y-4 text-sm text-[#340a10]">
+                  {Array.isArray(result.analysis.what_locals_say) ? (
+                    result.analysis.what_locals_say.map((paragraph, idx) => (
+                      <p key={idx}>{paragraph}</p>
+                    ))
+                  ) : (
+                    <p>{result.analysis.what_locals_say}</p>
                   )}
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+            )}
+
+            {/* Separator */}
+            <div className="border-t border-[#340a10] opacity-30 my-12"></div>
 
             {/* Ratings */}
             {result.analysis && (
@@ -165,7 +160,7 @@ function Home() {
                 <div className="grid grid-cols-4 gap-4">
                   {result.analysis.ratings && Object.entries(result.analysis.ratings).map(([key, value]) => (
                     <div key={key} className="text-center">
-                      <p className="capitalize text-base text-[#b8020a] mb-2">{key.replace('_', ' ')}</p>
+                      <p className="capitalize text-lg text-[#b8020a] font-semibold mb-2">{key.replace('_', ' ')}</p>
                       <img
                         src={`/${value.score}_5.png`}
                         alt={`${value.score} out of 5`}
@@ -177,41 +172,65 @@ function Home() {
               </div>
             )}
 
+            {/* Separator */}
+            <div className="border-t border-[#340a10] opacity-30 my-12"></div>
+
             {/* Transport */}
             {result.transport && (
               <div className="mb-12">
-                <div className="mb-8">
-                  <h3 className="text-xl text-[#b8020a] mb-4">Travel Times to Landmarks</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {result.transport.landmark_travel_times?.map((landmark, idx) => (
-                      <div key={idx} className="p-3 bg-white rounded-lg flex justify-between items-center">
-                        <span className="text-sm">{landmark.landmark}</span>
-                        <span className="font-semibold text-sm">{landmark.time}</span>
-                      </div>
-                    ))}
+                {/* Travel Times to Landmarks */}
+                {result.transport.landmark_travel_times && (
+                  <div className="mb-12">
+                    <h3 className="text-3xl text-[#340a10] font-bold mb-2">Travel Times to Landmarks</h3>
+                    <p className="text-sm text-[#340a10] mb-6 opacity-70">Public transport from your address</p>
+                    <div className="grid grid-cols-6 gap-6">
+                      {result.transport.landmark_travel_times.map((landmark, idx) => {
+                        const iconMap = {
+                          'Sacré-Cœur': 'sacre',
+                          'Notre-Dame': 'notre',
+                          'Eiffel Tower': 'eiffel',
+                          'Arc de Triomphe': 'arc',
+                          'Louvre': 'louvre',
+                          'Champs-Élysées': 'champs'
+                        };
+                        const iconName = iconMap[landmark.landmark];
+                        const displayName = landmark.landmark;
+                        return (
+                          <div key={idx} className="flex flex-col items-center">
+                            <p className="text-xs text-[#340a10] text-center mb-2 font-medium">{displayName}</p>
+                            <img
+                              src={`/landmarks/${iconName}.png`}
+                              alt={landmark.landmark}
+                              className="h-16 w-16 mb-3"
+                            />
+                            <p className="text-sm text-[#340a10] text-center font-semibold">{landmark.time}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
+                {/* Nearby Stations */}
                 {result.transport.nearby_stations && result.transport.nearby_stations.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-xl text-[#b8020a] mb-4">Nearby Stations</h3>
-                    <div className="space-y-2">
+                    <h3 className="text-3xl text-[#340a10] font-bold mb-2">Nearby Stations</h3>
+                    <p className="text-sm text-[#340a10] mb-6 opacity-70">Within walking distance</p>
+                    <div className="space-y-3">
                       {result.transport.nearby_stations.slice(0, 5).map((station, idx) => (
-                        <div key={idx} className="p-3 bg-white rounded-lg">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium text-sm">{station.name}</p>
-                              <p className="text-xs text-gray-600 mt-1">
-                                {station.transport_type}
-                                {station.lines && station.lines.length > 0 && (
-                                  <span> • Lines: {station.lines.join(', ')}</span>
-                                )}
-                              </p>
-                            </div>
-                            <span className="text-sm text-gray-600 whitespace-nowrap ml-2">
-                              {station.walk_time_minutes} min walk
-                            </span>
+                        <div key={idx} className="flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold text-sm text-[#340a10]">{station.name}</p>
+                            <p className="text-xs text-[#340a10] mt-1 opacity-70">
+                              {station.transport_type}
+                              {station.lines && station.lines.length > 0 && (
+                                <span> • Lines: {station.lines.join(', ')}</span>
+                              )}
+                            </p>
                           </div>
+                          <span className="text-sm text-[#340a10] whitespace-nowrap ml-4 font-semibold">
+                            {station.walk_time_minutes} min walk
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -227,7 +246,7 @@ function Home() {
                   setAddress('');
                   setError(null);
                 }}
-                className="px-8 py-3 bg-black text-white hover:bg-[#b8020a] transition-colors font-medium rounded-full"
+                className="px-8 py-3 bg-[#340a10] text-[#e9e9e6] hover:bg-[#4a0e16] transition-colors font-medium rounded-full"
               >
                 Search Another Address
               </button>
